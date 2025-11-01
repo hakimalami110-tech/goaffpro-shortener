@@ -3,23 +3,23 @@ import random
 import string
 import subprocess
 
-# === CONFIG ===
-DOCS_DIR = "docs"
-OUTPUT_FILE = "22.txt"
-REDIRECT_DELAY = 5
+# ===== CONFIG =====
+DOCS_DIR = "docs"                  # Tous les fichiers HTML seront ici
+OUTPUT_FILE = "22.txt"             # Fichier qui stocke tous les shortlinks
+REDIRECT_DELAY = 5                 # Temps avant redirection (en secondes)
 GITHUB_USER = "hakimalami110-tech"
 GITHUB_REPO = "goaffpro-shortener"
 
-# === Liens leurres possibles ===
+# ===== Liens leurres possibles =====
 FAKE_LINKS = [
     ("YouTube", "https://www.youtube.com"),
     ("Google", "https://www.google.com"),
     ("Facebook", "https://www.facebook.com"),
     ("Wikipedia", "https://www.wikipedia.org"),
-    ("Twitter", "https://twitter.com")
+    ("Gmail", "https://mail.google.com")
 ]
 
-# === FONCTIONS ===
+# ===== FONCTIONS =====
 
 def random_code(length=8):
     return ''.join(random.choices(string.ascii_letters + string.digits, k=length))
@@ -31,51 +31,48 @@ def create_html(filename, target_url, fake_mode=False):
     html_content = f"""<!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="refresh" content="{REDIRECT_DELAY};url={target_url}">
-    <title>Redirection...</title>
-    <style>
-        body {{ font-family: Arial, sans-serif; text-align: center; padding: 60px; background-color: #f7f7f7; }}
-        h1 {{ color: #0b74de; }}
-        a {{ text-decoration: none; color: #0b74de; }}
-        .small {{ color: #777; font-size: 0.9rem; }}
-    </style>
+  <meta charset="UTF-8">
+  <meta http-equiv="refresh" content="{REDIRECT_DELAY};url={target_url}">
+  <title>Chargement...</title>
+  <style>
+    body {{ font-family: Arial, sans-serif; text-align: center; padding: 60px; background:#f7f7f7; }}
+    .fake-links p {{ margin:8px 0; }}
+    a {{ color:#0b74de; text-decoration:none; }}
+  </style>
 </head>
 <body>
-    <h1>Redirection en cours...</h1>
-    <p>Merci de patienter quelques secondes.</p>
+  <h1>Un instant…</h1>
+  <p>Nous préparons la page. Voici quelques liens utiles :</p>
+  <div class="fake-links">
 """
-
-    if fake_mode and selected_fakes:
-        html_content += "<div class='fake-links'><p>Quelques liens :</p>\n"
-        for name, url in selected_fakes:
-            html_content += f"<p><a href='{url}' target='_blank'>{name}</a></p>\n"
-        html_content += "</div>\n"
+    for name, url in selected_fakes:
+        html_content += f"    <p><a href=\"{url}\" target=\"_blank\" rel=\"noopener\">{name}</a></p>\n"
 
     html_content += f"""
-    <script>
-        setTimeout(function() {{
-            window.location.href = "{target_url}";
-        }}, {REDIRECT_DELAY * 1000});
-    </script>
+  </div>
+  <script>
+    setTimeout(function() {{
+      window.location.href = "{target_url}";
+    }}, {REDIRECT_DELAY * 1000});
+  </script>
 </body>
 </html>"""
 
     filepath = os.path.join(DOCS_DIR, filename)
     with open(filepath, "w", encoding="utf-8") as f:
         f.write(html_content)
-
     return filepath
 
 def get_full_url(filename):
-    return f"https://{GITHUB_USER}.github.io/{GITHUB_REPO}/{DOCS_DIR}/{filename}"
+    return f"https://{GITHUB_USER}.github.io/{GITHUB_REPO}/{filename}"
 
 def update_index(files):
-    with open("index.html", "w", encoding="utf-8") as index:
+    index_path = os.path.join(DOCS_DIR, "index.html")
+    with open(index_path, "w", encoding="utf-8") as index:
         index.write("<!DOCTYPE html><html lang='fr'><head><meta charset='UTF-8'><title>Mes Shortlinks</title></head><body>")
         index.write("<h1>Mes Shortlinks</h1><ul>")
         for file in files:
-            index.write(f"<li><a href='{get_full_url(file)}' target='_blank'>{get_full_url(file)}</a></li>")
+            index.write(f"<li><a href='{get_full_url(DOCS_DIR+'/'+file)}' target='_blank'>{get_full_url(DOCS_DIR+'/'+file)}</a></li>")
         index.write("</ul></body></html>")
 
 def save_to_txt(shortlinks):
@@ -132,7 +129,7 @@ def main():
         target_url = links[i]
         filename = random_code() + ".html"
         create_html(filename, target_url, fake_mode=(choice == "2"))
-        full_url = get_full_url(filename)
+        full_url = get_full_url(DOCS_DIR+'/'+filename)
         shortlinks.append(full_url)
         print(f"✅ Lien créé : {full_url}")
 
