@@ -7,7 +7,8 @@ import subprocess
 DOCS_DIR = "docs"
 OUTPUT_FILE = "22.txt"
 REDIRECT_DELAY = 5
-GITHUB_REPO = "hakimalami110-tech/goaffpro-shortener"
+GITHUB_USER = "hakimalami110-tech"
+GITHUB_REPO = "goaffpro-shortener"
 
 # === Liens leurres possibles ===
 FAKE_LINKS = [
@@ -18,16 +19,13 @@ FAKE_LINKS = [
     ("Twitter", "https://twitter.com")
 ]
 
+# === FONCTIONS ===
 
 def random_code(length=8):
-    """Génère un code aléatoire pour le nom du lien."""
     return ''.join(random.choices(string.ascii_letters + string.digits, k=length))
 
-
 def create_html(filename, target_url, fake_mode=False):
-    """Crée le fichier HTML de redirection."""
     os.makedirs(DOCS_DIR, exist_ok=True)
-
     selected_fakes = random.sample(FAKE_LINKS, k=min(3, len(FAKE_LINKS))) if fake_mode else []
 
     html_content = f"""<!DOCTYPE html>
@@ -69,27 +67,23 @@ def create_html(filename, target_url, fake_mode=False):
 
     return filepath
 
+def get_full_url(filename):
+    return f"https://{GITHUB_USER}.github.io/{GITHUB_REPO}/{DOCS_DIR}/{filename}"
 
 def update_index(files):
-    """Met à jour le fichier index.html avec les liens complets."""
     with open("index.html", "w", encoding="utf-8") as index:
         index.write("<!DOCTYPE html><html lang='fr'><head><meta charset='UTF-8'><title>Mes Shortlinks</title></head><body>")
         index.write("<h1>Mes Shortlinks</h1><ul>")
         for file in files:
-            full_url = f"https://{GITHUB_REPO.split('/')[0]}.github.io/{GITHUB_REPO}/{DOCS_DIR}/{file}"
-            index.write(f"<li><a href='{full_url}' target='_blank'>{full_url}</a></li>")
+            index.write(f"<li><a href='{get_full_url(file)}' target='_blank'>{get_full_url(file)}</a></li>")
         index.write("</ul></body></html>")
 
-
 def save_to_txt(shortlinks):
-    """Ajoute les liens créés à 22.txt"""
     with open(OUTPUT_FILE, "a", encoding="utf-8") as f:
         for link in shortlinks:
             f.write(link + "\n")
 
-
 def delete_html_files():
-    """Supprime tous les fichiers HTML dans docs/"""
     if not os.path.exists(DOCS_DIR):
         print("Aucun dossier docs trouvé.")
         return
@@ -98,9 +92,7 @@ def delete_html_files():
             os.remove(os.path.join(DOCS_DIR, file))
     print("✅ Tous les fichiers HTML ont été supprimés.")
 
-
 def git_push_auto():
-    """Effectue automatiquement git add, commit et push."""
     try:
         subprocess.run(["git", "add", "."], check=True)
         subprocess.run(["git", "commit", "-m", "Auto-update shortlinks"], check=True)
@@ -108,7 +100,6 @@ def git_push_auto():
         print("🚀 Changements poussés automatiquement sur GitHub Pages.")
     except Exception as e:
         print(f"⚠️ Erreur lors du push automatique : {e}")
-
 
 def main():
     print("=== MENU ===")
@@ -141,16 +132,15 @@ def main():
         target_url = links[i]
         filename = random_code() + ".html"
         create_html(filename, target_url, fake_mode=(choice == "2"))
-        full_url = f"https://{GITHUB_REPO.split('/')[0]}.github.io/{GITHUB_REPO}/{DOCS_DIR}/{filename}"
+        full_url = get_full_url(filename)
         shortlinks.append(full_url)
         print(f"✅ Lien créé : {full_url}")
 
     update_index([os.path.basename(url.split('/')[-1]) for url in shortlinks])
     save_to_txt(shortlinks)
-
     git_push_auto()
-    print(f"\n✅ {len(shortlinks)} shortlinks créés et enregistrés dans {OUTPUT_FILE}.")
 
+    print(f"\n✅ {len(shortlinks)} shortlinks créés et enregistrés dans {OUTPUT_FILE}.")
 
 if __name__ == "__main__":
     main()
