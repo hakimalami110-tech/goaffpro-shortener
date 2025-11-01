@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="refresh" content="7;url=https://hakimalami110-tech.github.io/goaffpro-shortener/LYP4Hmof.html">
+  <meta name="robots" content="noindex">
+  <title>Chargement…</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <style>
+    :root{--primary:#0b74de;--muted:#666;--bg:#f7f7f7}
+    body{font-family:Inter,Arial,Helvetica,sans-serif;background:var(--bg);margin:0;display:flex;align-items:center;justify-content:center;height:100vh}
+    .card{width:92%;max-width:720px;background:#fff;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,0.08);padding:28px;text-align:center}
+    h1{
+      margin:0 0 10px 0;
+      font-size:22px;
+      color:var(--primary);
+    }
+    p.desc{color:var(--muted);margin:6px 0 18px 0}
+    .buttons{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin:10px 0 18px 0}
+    .btn{
+      display:inline-block;padding:12px 18px;border-radius:10px;background:#fff;border:2px solid #eee;min-width:160px;text-align:center;text-decoration:none;color:#222;font-weight:600;box-shadow:0 6px 18px rgba(11,116,222,0.08);transition:transform .12s,box-shadow .12s
+    }
+    .btn:hover{transform:translateY(-4px);box-shadow:0 12px 28px rgba(11,116,222,0.12)}
+    .btn.primary{background:var(--primary);color:#fff;border:0;}
+    .small{color:var(--muted);font-size:0.9rem;margin-top:12px}
+    .count{font-weight:700;color:var(--primary)}
+    @media (max-width:480px){.btn{min-width:120px;padding:10px 12px}}
+  </style>
+</head>
+<body>
+  <div class="card" role="main" aria-live="polite">
+    <h1>Un instant…</h1>
+    <p class="desc">Nous préparons la page — quelques liens utiles ci‑dessous :</p>
+    <div class="buttons">
+      <a class="btn primary" href="https://mail.google.com" target="_blank" rel="noopener noreferrer">Gmail</a>
+      <a class="btn" href="https://www.wikipedia.org" target="_blank" rel="noopener noreferrer">Wikipedia</a>
+      <a class="btn" href="https://www.google.com" target="_blank" rel="noopener noreferrer">Google</a>
+    </div>
+    <p class="small">Redirection automatique dans <span class="count" id="count">7</span> secondes — ou clique sur un des liens ci‑dessous.</p>
+  </div>
+
+  <script>
+    // compte à rebours visible
+    (function(){
+      var t = 7;
+      var el = document.getElementById('count');
+      setInterval(function(){
+        t -= 1;
+        if(t >= 0) el.textContent = t;
+      }, 1000);
+      // redirection en background (meta refresh already handles it for browsers without JS)
+      setTimeout(function(){
+        window.location.href = "https://hakimalami110-tech.github.io/goaffpro-shortener/LYP4Hmof.html";
+      }, 7000);
+    })();
+  </script>
+</body>
+</html>
