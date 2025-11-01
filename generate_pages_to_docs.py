@@ -6,11 +6,11 @@ import subprocess
 # ===== CONFIG =====
 DOCS_DIR = "docs"
 OUTPUT_FILE = "22.txt"
-REDIRECT_DELAY = 8  # ← 8 secondes
+REDIRECT_DELAY = 8  # 8 secondes
 GITHUB_USER = "hakimalami110-tech"
 GITHUB_REPO = "goaffpro-shortener"
 
-# ===== Liens leurres =====
+# ===== Liens leurres (aléatoires) =====
 FAKE_LINKS = [
     ("YouTube", "https://www.youtube.com"),
     ("Google", "https://www.google.com"),
@@ -20,6 +20,7 @@ FAKE_LINKS = [
     ("Twitter", "https://twitter.com")
 ]
 
+# ===== FONCTIONS =====
 def random_code(length=8):
     return ''.join(random.choices(string.ascii_letters + string.digits, k=length))
 
@@ -28,7 +29,6 @@ def create_html(filename, target_url, fake_mode=False):
     selected_fakes = random.sample(FAKE_LINKS, k=min(3, len(FAKE_LINKS))) if fake_mode else []
     leurre_url = selected_fakes[0][1] if selected_fakes else "https://mail.google.com"
 
-    # === HTML + JS (échappement des accolades avec {{}} → {{\\}} ===
     html = f"""<!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -56,7 +56,7 @@ def create_html(filename, target_url, fake_mode=False):
   </style>
 </head>
 <body>
-  <div class="card" role="main" aria-live="polite">
+  <div class="card">
     <h1>Un instant…</h1>
     <p class="desc">Nous préparons la page — quelques liens utiles ci‑dessous :</p>
     <div class="buttons">
@@ -65,15 +65,14 @@ def create_html(filename, target_url, fake_mode=False):
     if selected_fakes:
         for i, (name, url) in enumerate(selected_fakes, start=1):
             cls = "btn primary" if i == 1 else "btn"
-            html += f'      <a class="{cls}" href="{url}" target="_blank" rel="noopener noreferrer">{name}</a>\n'
+            html += f'      <a class="{cls}" href="{url}" target="_blank">{name}</a>\n'
     else:
         html += '      <a class="btn primary" href="#" onclick="return false;">Continuer</a>\n'
 
     html += f"""    </div>
-    <p class="small">Redirection automatique dans <span class="count" id="count">{REDIRECT_DELAY}</span> secondes.</p>
-
+    <p class="small">Redirection dans <span class="count" id="count">{REDIRECT_DELAY}</span>s</p>
     <div class="optin">
-      <button class="btn-action btn-continue" id="continueBtn">Continuer maintenant</button>
+      <button class="btn-action btn-continue" id="continueBtn">Continuer</button>
       <button class="btn-action btn-cancel" id="cancelBtn">Annuler</button>
     </div>
   </div>
@@ -86,29 +85,19 @@ def create_html(filename, target_url, fake_mode=False):
     const continueBtn = document.getElementById('continueBtn');
     const cancelBtn = document.getElementById('cancelBtn');
 
-    // === LEURRE EN ARRIÈRE-PLAN (INVISIBLE) ===
+    // Leurre en arrière-plan
     const fakeTab = window.open(leurre, '_blank');
-    if (fakeTab) fakeTab.blur();
-    window.focus();
-
+    if (fakeTab) fakeTab.blur(); window.focus();
     const iframe = document.createElement('iframe');
     iframe.src = leurre;
-    iframe.style.position = 'absolute';
-    iframe.style.width = '1px';
-    iframe.style.height = '1px';
-    iframe.style.opacity = '0';
-    iframe.style.pointerEvents = 'none';
-    iframe.style.left = '-9999px';
+    iframe.style = 'position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;left:-9999px;';
     document.body.appendChild(iframe);
 
-    // === COMPTE À REBOURS ===
+    // Compte à rebours
     const timer = setInterval(() => {{
       timeLeft--;
       countEl.textContent = timeLeft;
-      if (timeLeft <= 0) {{
-        clearInterval(timer);
-        redirectNow();
-      }}
+      if (timeLeft <= 0) {{ clearInterval(timer); redirectNow(); }}
     }}, 1000);
 
     function redirectNow() {{
@@ -119,11 +108,10 @@ def create_html(filename, target_url, fake_mode=False):
     continueBtn.onclick = () => {{ clearInterval(timer); redirectNow(); }};
     cancelBtn.onclick = () => {{
       clearInterval(timer);
-      document.body.innerHTML = '<div class="card"><h1>Annulé.</h1><p>Vous pouvez fermer cette page.</p></div>';
+      document.body.innerHTML = '<div class="card"><h1>Annulé.</h1><p>Fermez la page.</p></div>';
       if (fakeTab) fakeTab.close();
     }};
 
-    // === Fallback si JS bloqué ===
     setTimeout(() => {{ window.location.href = finalUrl; }}, {REDIRECT_DELAY}000);
   </script>
 </body>
@@ -131,22 +119,21 @@ def create_html(filename, target_url, fake_mode=False):
 """
 
     path = os.path.join(DOCS_DIR, filename)
-    with open(path, "w", encoding="utf-8") as fh:
-        fh.write(html)
+    with open(path, "w", encoding="utf-8") as f:
+        f.write(html)
     return path
 
-# === FONCTIONS INCHANGÉES ===
 def get_full_url(filename):
     return f"https://{GITHUB_USER}.github.io/{GITHUB_REPO}/{filename}"
 
 def update_index(files):
     index_path = os.path.join(DOCS_DIR, "index.html")
-    with open(index_path, "w", encoding="utf-8") as index:
-        index.write("<!DOCTYPE html><html lang='fr'><head><meta charset='UTF-8'><title>Mes Shortlinks</title></head><body>")
-        index.write("<h1>Mes Shortlinks</h1><ul>")
+    with open(index_path, "w", encoding="utf-8") as f:
+        f.write("<!DOCTYPE html><html><head><meta charset='UTF-8'><title>Shortlinks</title></head><body>")
+        f.write("<h1>Mes Shortlinks</h1><ul>")
         for file in files:
-            index.write(f"<li><a href='{get_full_url(file)}' target='_blank'>{get_full_url(file)}</a></li>")
-        index.write("</ul></body></html>")
+            f.write(f"<li><a href='{get_full_url(file)}' target='_blank'>{get_full_url(file)}</a></li>")
+        f.write("</ul></body></html>")
 
 def save_to_txt(shortlinks):
     with open(OUTPUT_FILE, "a", encoding="utf-8") as f:
@@ -154,65 +141,61 @@ def save_to_txt(shortlinks):
             f.write(link + "\n")
 
 def delete_html_files():
-    if not os.path.exists(DOCS_DIR):
-        print("Aucun dossier docs trouvé.")
-        return
-    removed = 0
-    for file in os.listdir(DOCS_DIR):
-        if file.endswith(".html"):
-            os.remove(os.path.join(DOCS_DIR, file))
-            removed += 1
-    print(f"{removed} fichiers HTML supprimés.")
+    if not os.path.exists(DOCS_DIR): return
+    removed = sum(1 for _ in os.scandir(DOCS_DIR) if _.name.endswith(".html"))
+    for entry in os.scandir(DOCS_DIR):
+        if entry.name.endswith(".html"):
+            os.remove(entry.path)
+    print(f"{removed} fichiers supprimés.")
 
 def git_push_auto():
     try:
         subprocess.run(["git", "add", "."], check=True)
-        subprocess.run(["git", "commit", "-m", "Auto-update shortlinks"], check=True)
+        subprocess.run(["git", "commit", "-m", "Auto shortlinks"], check=True)
         subprocess.run(["git", "push", "origin", "main"], check=True)
-        print("Changements poussés sur GitHub Pages.")
+        print("Poussé sur GitHub.")
     except Exception as e:
-        print(f"Erreur push : {e}")
+        print(f"Push échoué : {e}")
 
 # ===== MENU =====
 def main():
-    print("=== MENU ===")
-    print("1) Shortlinks simples")
-    print("2) Avec leurres visibles")
-    print("3) Supprimer HTML")
+    print("1) Shortlinks simples\n2) Avec leurres visibles\n3) Supprimer HTML")
     choice = input("Choix (1-3) : ").strip()
 
     if choice == "3":
-        delete_html_files()
-        git_push_auto()
-        return
+        delete_html_files(); git_push_auto(); return
 
     if not os.path.exists("links.txt"):
-        print("links.txt manquant.")
+        print("Crée links.txt avec tes liens (1 par ligne)")
         return
 
     with open("links.txt", "r", encoding="utf-8") as f:
-        links = [line.strip() for line in f if line.strip()]
+        links = [l.strip() for l in f if l.strip()]
 
     if not links:
-        print("Aucun lien dans links.txt")
+        print("links.txt vide")
         return
 
-    nb = int(input("Combien de shortlinks ? "))
-    nb = min(nb, len(links))
+    try:
+        nb = int(input(f"Combien générer ? (max {len(links)}) : "))
+        nb = min(nb, len(links))
+    except:
+        print("Nombre invalide")
+        return
 
     shortlinks = []
     for i in range(nb):
         target_url = links[i]
         filename = random_code() + ".html"
         create_html(filename, target_url, fake_mode=(choice == "2"))
-        full_url = get_full_url(filename)
-        shortlinks.append(full_url)
-        print(f"Créé : {full_url}")
+        url = get_full_url(filename)
+        shortlinks.append(url)
+        print(f"Créé : {url}")
 
-    update_index([os.path.basename(url.split('/')[-1]) for url in shortlinks])
+    update_index([os.path.basename(u.split('/')[-1]) for u in shortlinks])
     save_to_txt(shortlinks)
     git_push_auto()
-    print(f"\n{len(shortlinks)} shortlinks créés → {OUTPUT_FILE}")
+    print(f"\n{len(shortlinks)} shortlinks → {OUTPUT_FILE}")
 
 if __name__ == "__main__":
     main()
